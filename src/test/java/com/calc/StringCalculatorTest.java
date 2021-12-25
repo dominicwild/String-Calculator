@@ -6,10 +6,17 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.quicktheories.generators.SourceDSL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.quicktheories.QuickTheory.qt;
 import static org.quicktheories.generators.SourceDSL.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
+
+import com.calc.StringCalculator.NegativesNotAllowed;
 
 import static org.quicktheories.generators.Generate.*;
 
@@ -25,7 +32,7 @@ public class StringCalculatorTest {
 	@Test
 	void one_number_returns_itself() {
 		qt()
-				.forAll(integers().all())
+				.forAll(integers().allPositive())
 				.check((number) -> StringCalculator.add("" + number) == number);
 	}
 
@@ -81,6 +88,26 @@ public class StringCalculatorTest {
 						sumOfNumbers += number;
 					}
 					return StringCalculator.add(stringBuilder.toString()) == sumOfNumbers;
+				});
+	}
+
+	@Test
+	void negative_numbers_throws_exception() {
+		qt()
+				.forAll(intArrays(range(1, 1000), range(-10_000, 10_000)))
+				.check((numbers) -> {
+					numbers[0] = -1;
+					StringBuilder stringBuilder = new StringBuilder();
+					for (int number : numbers) {
+						stringBuilder.append(number + randomDelimiter());
+					}
+					NegativesNotAllowed ex = assertThrows(NegativesNotAllowed.class,
+							() -> StringCalculator.add(stringBuilder.toString()));
+					List<Integer> negativeNumbers = Arrays.stream(numbers)
+							.filter(number -> number < 0)
+							.boxed()
+							.collect(Collectors.toList());
+					return ex.getNumbers().equals(negativeNumbers);
 				});
 	}
 
