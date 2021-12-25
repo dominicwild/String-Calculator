@@ -1,7 +1,6 @@
 package com.calc;
 
 import org.junit.jupiter.api.Test;
-import org.quicktheories.WithQuickTheories;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.quicktheories.QuickTheory.qt;
@@ -15,6 +14,13 @@ public class StringCalculatorTest {
 		int zero = 0;
 		String blankString = "";
 		assertEquals(zero, StringCalculator.add(blankString));
+	}
+
+	@Test
+	void one_number_returns_itself() {
+		qt()
+				.forAll(integers().all())
+				.check((number) -> StringCalculator.add("" + number) == number);
 	}
 
 }
