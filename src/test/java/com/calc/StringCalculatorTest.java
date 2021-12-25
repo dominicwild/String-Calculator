@@ -23,4 +23,11 @@ public class StringCalculatorTest {
 				.check((number) -> StringCalculator.add("" + number) == number);
 	}
 
+	@Test
+	void two_numbers_returns_sum() {
+		qt()
+				.forAll(range(0, Integer.MAX_VALUE), range(0, Integer.MAX_VALUE))
+				.check((num1, num2) -> StringCalculator.add(num1 + "," + num2) == num1 + num2);
+	}
+
 }
