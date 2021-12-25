@@ -8,6 +8,6 @@ class StringCalculator {
 			return 0;
 		}
 
-		return Stream.of(numbers.split(",")).map(Integer::parseInt).reduce(0, Integer::sum);
+		return Stream.of(numbers.split("(,|\\\\n)")).map(Integer::parseInt).reduce(0, Integer::sum);
 	}
 }

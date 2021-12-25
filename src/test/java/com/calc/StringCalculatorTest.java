@@ -1,6 +1,8 @@
 package com.calc;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.quicktheories.generators.Generate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,15 +36,15 @@ public class StringCalculatorTest {
 				.check((num1, num2) -> StringCalculator.add(num1 + "," + num2) == num1 + num2);
 	}
 
-	@Test
-
-	void comma_separated_numbers_returns_sum() {
+	@ParameterizedTest
+	@ValueSource(strings = { ",", "\\n" })
+	void separated_numbers_returns_sum(String delimiter) {
 		qt()
-				.forAll(Generate.intArrays(range(0, 100_000), range(0, 10_000)))
+				.forAll(Generate.intArrays(range(0, 1000), range(0, 10_000)))
 				.check((numbers) -> {
-					StringJoiner numberJoin = new StringJoiner(",");
+					StringJoiner numberJoin = new StringJoiner(delimiter);
 					int sumOfNumbers = 0;
-					for(int number : numbers) {
+					for (int number : numbers) {
 						numberJoin.add(number + "");
 						sumOfNumbers += number;
 					}
