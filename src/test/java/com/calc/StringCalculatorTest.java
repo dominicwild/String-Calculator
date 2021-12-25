@@ -52,4 +52,23 @@ public class StringCalculatorTest {
 				});
 	}
 
+	@Test
+	void numbers_with_mixed_separators_return_sum() {
+		qt()
+				.forAll(Generate.intArrays(range(0, 1000), range(0, 10_000)))
+				.check((numbers) -> {
+					StringBuilder stringBuilder = new StringBuilder();
+					int sumOfNumbers = 0;
+					for (int number : numbers) {
+						stringBuilder.append(number + randomDelimiter());
+						sumOfNumbers += number;
+					}
+					return StringCalculator.add(stringBuilder.toString()) == sumOfNumbers;
+				});
+	}
+
+	private String randomDelimiter() {
+		return Math.random() > 0.5 ? "," : "\\n";
+	}
+
 }
