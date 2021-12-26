@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 class StringCalculator {
 
+	public static final int MAX_NUMBER_SUPPORTED = 1000;
 	private static final String CUSTOM_DELIMITER_PREFIX = "//";
 
 	public static class NegativesNotAllowed extends RuntimeException {
@@ -41,10 +42,15 @@ class StringCalculator {
 		}
 
 		String[] splitNumbers = numbers.split(splitRegex);
+		List<Integer> parsedNumbers = Stream.of(splitNumbers)
+				.map(Integer::parseInt)
+				.filter(number -> number <= MAX_NUMBER_SUPPORTED)
+				.collect(toList());
 
 		checkForNoNegativeNumbers(splitNumbers);
 
-		return Stream.of(splitNumbers).map(Integer::parseInt).reduce(0, Integer::sum);
+
+		return parsedNumbers.stream().reduce(0, Integer::sum);
 	}
 
 
