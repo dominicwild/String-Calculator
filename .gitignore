@@ -199,3 +199,4 @@ buildNumber.properties
 
 # End of https://www.gitignore.io/api/java,maven,eclipse,intellij+all,visualstudiocode
 .vscode/settings.json
+src/test/java/com/calc/local
