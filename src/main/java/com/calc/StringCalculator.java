@@ -28,38 +28,41 @@ public class StringCalculator {
 		}
 	}
 
-	public static int add(String numbers) {
-		if (numbers.equals("")) {
+	public static int add(String numbersInput) {
+		if (numbersInput.equals("")) {
 			return 0;
 		}
 
-		String splitRegex = "(,|\\\\n)";
-
-		if (numbers.startsWith(CUSTOM_DELIMITER_PREFIX)) {
-			Pattern customLengthDelimiterPattern = Pattern.compile(CUSTOM_DELIMITER_PREFIX + "\\[(.*?)\\]");
-			Matcher delimiterMatcher = customLengthDelimiterPattern.matcher(numbers);
-
-			if (delimiterMatcher.find()) {
-				String delimiter = delimiterMatcher.group(1);
-				String delimiterRegex = Pattern.quote(delimiter);
-				splitRegex = "(" + delimiterRegex + "|\\\\n)";
-				numbers = numbers.substring(6 + delimiter.length());
-			} else {
-				String customDelimiter = numbers.charAt(2) + "";
-				splitRegex = Pattern.quote(customDelimiter);
-				numbers = numbers.substring(5);
-			}
-		}
-
-		String[] splitNumbers = numbers.split(splitRegex);
-		List<Integer> parsedNumbers = Stream.of(splitNumbers)
-				.map(Integer::parseInt)
-				.filter(number -> number <= MAX_NUMBER_SUPPORTED)
-				.collect(toList());
+		List<Integer> parsedNumbers = parseNumbersFrom(numbersInput);
 
 		checkForNoNegativeNumbers(parsedNumbers);
 
 		return parsedNumbers.stream().reduce(0, Integer::sum);
+	}
+
+	private static List<Integer> parseNumbersFrom(String numbersInput) {
+		String splitRegex = "(,|\\\\n)";
+
+		if (numbersInput.startsWith(CUSTOM_DELIMITER_PREFIX)) {
+			Pattern customLengthDelimiterRegex = Pattern.compile(CUSTOM_DELIMITER_PREFIX + "\\[(.*?)\\]");
+			Matcher delimiterMatcher = customLengthDelimiterRegex.matcher(numbersInput);
+
+			if (delimiterMatcher.find()) {
+				String multiCharDelimiter = delimiterMatcher.group(1);
+				splitRegex = Pattern.quote(multiCharDelimiter);
+				numbersInput = numbersInput.substring(6 + multiCharDelimiter.length());
+			} else {
+				String singleCharDelimiter = numbersInput.charAt(2) + "";
+				splitRegex = Pattern.quote(singleCharDelimiter);
+				numbersInput = numbersInput.substring(5);
+			}
+		}
+
+		String[] splitNumbers = numbersInput.split(splitRegex);
+		return Stream.of(splitNumbers)
+				.map(Integer::parseInt)
+				.filter(number -> number <= MAX_NUMBER_SUPPORTED)
+				.collect(toList());
 	}
 
 	private static void checkForNoNegativeNumbers(List<Integer> parsedNumbers) {
