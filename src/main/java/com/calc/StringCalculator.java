@@ -4,10 +4,11 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-class StringCalculator {
+public class StringCalculator {
 
 	public static final int MAX_NUMBER_SUPPORTED = 1000;
 	private static final String CUSTOM_DELIMITER_PREFIX = "//";
@@ -26,7 +27,6 @@ class StringCalculator {
 			return Collections.unmodifiableList(negativeNumbers);
 		}
 	}
-	
 
 	public static int add(String numbers) {
 		if (numbers.equals("")) {
@@ -36,9 +36,19 @@ class StringCalculator {
 		String splitRegex = "(,|\\\\n)";
 
 		if (numbers.startsWith(CUSTOM_DELIMITER_PREFIX)) {
-			String customDelimiter = numbers.charAt(2) + "";
-			splitRegex = Pattern.quote(customDelimiter);
-			numbers = numbers.substring(5);
+			Pattern customLengthDelimiterPattern = Pattern.compile(CUSTOM_DELIMITER_PREFIX + "\\[(.*?)\\]");
+			Matcher delimiterMatcher = customLengthDelimiterPattern.matcher(numbers);
+
+			if (delimiterMatcher.find()) {
+				String delimiter = delimiterMatcher.group(1);
+				String delimiterRegex = Pattern.quote(delimiter);
+				splitRegex = "(" + delimiterRegex + "|\\\\n)";
+				numbers = numbers.substring(6 + delimiter.length());
+			} else {
+				String customDelimiter = numbers.charAt(2) + "";
+				splitRegex = Pattern.quote(customDelimiter);
+				numbers = numbers.substring(5);
+			}
 		}
 
 		String[] splitNumbers = numbers.split(splitRegex);
@@ -49,14 +59,12 @@ class StringCalculator {
 
 		checkForNoNegativeNumbers(parsedNumbers);
 
-
 		return parsedNumbers.stream().reduce(0, Integer::sum);
 	}
 
-
 	private static void checkForNoNegativeNumbers(List<Integer> parsedNumbers) {
 		List<Integer> negativeNumbers = parsedNumbers.stream().filter(number -> number < 0).collect(toList());
-		if(!negativeNumbers.isEmpty()){
+		if (!negativeNumbers.isEmpty()) {
 			throw new NegativesNotAllowed(negativeNumbers);
 		}
 	}

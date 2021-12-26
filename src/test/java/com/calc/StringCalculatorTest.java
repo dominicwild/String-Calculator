@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.calc.StringCalculator.NegativesNotAllowed;
@@ -131,6 +132,28 @@ public class StringCalculatorTest {
 						if (number <= 1000) {
 							sumOfNumbers += number;
 						}
+					}
+
+					return StringCalculator.add(stringBuilder.toString()) == sumOfNumbers;
+				});
+	}
+
+	@Test
+	void custom_delimiters_can_be_of_any_length_when_surrounded_in_square_brackets() {
+		String excludedSpecialChars = Pattern.quote("[]");
+		qt()
+				.forAll(intArrays(range(2, 1000), range(0, MAX_NUMBER_SUPPORTED)),
+						strings().basicLatinAlphabet().ofLengthBetween(2, 3)
+								.assuming(string -> !string.trim().isBlank()
+										&& !string.matches(".*[0-9" + excludedSpecialChars + "].*")))
+				.check((numbers, delimiter) -> {
+					StringBuilder stringBuilder = new StringBuilder();
+					stringBuilder.append("//[" + delimiter + "]\\n");
+					int sumOfNumbers = 0;
+
+					for (int number : numbers) {
+						stringBuilder.append(number + delimiter);
+						sumOfNumbers += number;
 					}
 
 					return StringCalculator.add(stringBuilder.toString()) == sumOfNumbers;
