@@ -52,10 +52,12 @@ public class StringCalculatorTest {
 				.check((numbers) -> {
 					StringJoiner numberJoin = new StringJoiner(delimiter);
 					int sumOfNumbers = 0;
+
 					for (int number : numbers) {
 						numberJoin.add(number + "");
 						sumOfNumbers += number;
 					}
+
 					return StringCalculator.add(numberJoin.toString()) == sumOfNumbers;
 				});
 	}
@@ -67,10 +69,12 @@ public class StringCalculatorTest {
 				.check((numbers) -> {
 					StringBuilder stringBuilder = new StringBuilder();
 					int sumOfNumbers = 0;
+
 					for (int number : numbers) {
 						stringBuilder.append(number + randomDelimiter());
 						sumOfNumbers += number;
 					}
+
 					return StringCalculator.add(stringBuilder.toString()) == sumOfNumbers;
 				});
 	}
@@ -84,10 +88,12 @@ public class StringCalculatorTest {
 					StringBuilder stringBuilder = new StringBuilder();
 					stringBuilder.append("//" + delimiter + "\\n");
 					int sumOfNumbers = 0;
+
 					for (int number : numbers) {
 						stringBuilder.append(number + delimiter);
 						sumOfNumbers += number;
 					}
+
 					return StringCalculator.add(stringBuilder.toString()) == sumOfNumbers;
 				});
 	}
@@ -99,15 +105,15 @@ public class StringCalculatorTest {
 				.check((numbers) -> {
 					numbers[0] = -1;
 					StringBuilder stringBuilder = new StringBuilder();
+
 					for (int number : numbers) {
 						stringBuilder.append(number + randomDelimiter());
 					}
+
 					NegativesNotAllowed ex = assertThrows(NegativesNotAllowed.class,
 							() -> StringCalculator.add(stringBuilder.toString()));
-					List<Integer> negativeNumbers = Arrays.stream(numbers)
-							.filter(number -> number < 0)
-							.boxed()
-							.collect(Collectors.toList());
+					List<Integer> negativeNumbers = negativeNumbersFrom(numbers);
+
 					return ex.getNumbers().equals(negativeNumbers);
 				});
 	}
@@ -119,12 +125,14 @@ public class StringCalculatorTest {
 				.check((numbers) -> {
 					StringBuilder stringBuilder = new StringBuilder();
 					int sumOfNumbers = 0;
+
 					for (int number : numbers) {
 						stringBuilder.append(number + randomDelimiter());
 						if (number <= 1000) {
 							sumOfNumbers += number;
 						}
 					}
+
 					return StringCalculator.add(stringBuilder.toString()) == sumOfNumbers;
 				});
 	}
@@ -133,4 +141,11 @@ public class StringCalculatorTest {
 		return Math.random() > 0.5 ? "," : "\\n";
 	}
 
+	private List<Integer> negativeNumbersFrom(int[] numbers) {
+		List<Integer> negativeNumbers = Arrays.stream(numbers)
+				.filter(number -> number < 0)
+				.boxed()
+				.collect(Collectors.toList());
+		return negativeNumbers;
+	}
 }

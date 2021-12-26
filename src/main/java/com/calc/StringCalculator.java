@@ -47,15 +47,15 @@ class StringCalculator {
 				.filter(number -> number <= MAX_NUMBER_SUPPORTED)
 				.collect(toList());
 
-		checkForNoNegativeNumbers(splitNumbers);
+		checkForNoNegativeNumbers(parsedNumbers);
 
 
 		return parsedNumbers.stream().reduce(0, Integer::sum);
 	}
 
 
-	private static void checkForNoNegativeNumbers(String[] splitNumbers) {
-		List<Integer> negativeNumbers = Stream.of(splitNumbers).map(Integer::parseInt).filter(number -> number < 0).collect(toList());
+	private static void checkForNoNegativeNumbers(List<Integer> parsedNumbers) {
+		List<Integer> negativeNumbers = parsedNumbers.stream().filter(number -> number < 0).collect(toList());
 		if(!negativeNumbers.isEmpty()){
 			throw new NegativesNotAllowed(negativeNumbers);
 		}
