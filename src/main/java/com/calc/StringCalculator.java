@@ -47,21 +47,7 @@ public class StringCalculator {
 		if (numbersInput.startsWith(CUSTOM_DELIMITER_PREFIX)) {
 			String delimiterDefinition = getDelimiterDefinitionFrom(numbersInput);
 			numbers = getNumbersFrom(numbersInput);
-
-			Matcher multiDelimiterMatcher = Pattern.compile("^\\[(.*?)\\]$").matcher(delimiterDefinition);
-			Matcher twoSingleDelimiterMatcher = Pattern.compile("^\\[(.)\\]\\[(.)\\]$").matcher(delimiterDefinition);
-
-			if (twoSingleDelimiterMatcher.find()) {
-				String firstDelimiter = Pattern.quote(twoSingleDelimiterMatcher.group(1));
-				String secondDelimiter = Pattern.quote(twoSingleDelimiterMatcher.group(2));
-				splitRegex = String.format("(%s|%s)", firstDelimiter, secondDelimiter);
-			} else if (multiDelimiterMatcher.find()) {
-				String multiCharDelimiter = multiDelimiterMatcher.group(1);
-				splitRegex = Pattern.quote(multiCharDelimiter);
-			} else {
-				String singleCharDelimiter = numbersInput.charAt(2) + "";
-				splitRegex = Pattern.quote(singleCharDelimiter);
-			}
+			splitRegex = determineSplitRegexFrom(delimiterDefinition);
 		}
 
 		String[] splitNumbers = numbers.split(splitRegex);
@@ -69,6 +55,24 @@ public class StringCalculator {
 				.map(Integer::parseInt)
 				.filter(number -> number <= MAX_NUMBER_SUPPORTED)
 				.collect(toList());
+	}
+
+	private static String determineSplitRegexFrom(String delimiterDefinition) {
+		Matcher multiDelimiterMatcher = Pattern.compile("^\\[(.*?)\\]$").matcher(delimiterDefinition);
+		Matcher twoSingleDelimiterMatcher = Pattern.compile("^\\[(.)\\]\\[(.)\\]$").matcher(delimiterDefinition);
+
+		if (twoSingleDelimiterMatcher.find()) {
+			String firstDelimiter = Pattern.quote(twoSingleDelimiterMatcher.group(1));
+			String secondDelimiter = Pattern.quote(twoSingleDelimiterMatcher.group(2));
+			return String.format("(%s|%s)", firstDelimiter, secondDelimiter);
+		}
+
+		if (multiDelimiterMatcher.find()) {
+			String multiCharDelimiter = multiDelimiterMatcher.group(1);
+			return Pattern.quote(multiCharDelimiter);
+		}
+
+		return Pattern.quote(delimiterDefinition);
 	}
 
 	private static String getNumbersFrom(String numbersInput) {
