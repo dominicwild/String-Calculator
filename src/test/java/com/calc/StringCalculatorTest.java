@@ -1,5 +1,6 @@
 package com.calc;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -84,7 +85,8 @@ public class StringCalculatorTest {
 	void numbers_with_custom_separator_return_sum() {
 		qt()
 				.forAll(intArrays(range(1, 1000), range(0, MAX_NUMBER_SUPPORTED)),
-						strings().ascii().ofLength(1).assuming(string -> !string.isBlank() && !string.matches("[0-9]")))
+						strings().basicLatinAlphabet().ofLength(1)
+								.assuming(string -> !string.isBlank() && !string.matches("[0-9]")))
 				.check((numbers, delimiter) -> {
 					StringBuilder stringBuilder = new StringBuilder();
 					stringBuilder.append("//" + delimiter + "\\n");
@@ -97,6 +99,43 @@ public class StringCalculatorTest {
 
 					return StringCalculator.add(stringBuilder.toString()) == sumOfNumbers;
 				});
+	}
+
+	@Test
+	void numbers_with_multiple_single_character_delimiters_return_sum() {
+		String excludedSpecialChars = Pattern.quote("[]");
+		qt()
+				.forAll(intArrays(range(1, 1000), range(0, MAX_NUMBER_SUPPORTED)),
+						strings().basicLatinAlphabet().ofLength(2)
+								.assuming(string -> !string.isBlank()
+										&& !string.matches(".*[0-9" + excludedSpecialChars + "].*")))
+				.check((numbers, delimiter) -> {
+					char delimiter1 = delimiter.charAt(0);
+					char delimiter2 = delimiter.charAt(1);
+					delimiter1 = '!';
+					delimiter2 = '!';
+					String delimiterPrefix = String.format("//[%s][%s]\\n", delimiter1, delimiter2);
+
+					StringBuilder stringBuilder = new StringBuilder();
+					stringBuilder.append(delimiterPrefix);
+					int sumOfNumbers = 0;
+
+					for (int number : numbers) {
+						char randomDelimiter = randomDelimiterFrom(delimiter1, delimiter2);
+
+						stringBuilder.append("" + number + randomDelimiter);
+						sumOfNumbers += number;
+					}
+
+					return StringCalculator.add(stringBuilder.toString()) == sumOfNumbers;
+				});
+	}
+
+	private char randomDelimiterFrom(char delimiter1, char delimiter2) {
+		if (Math.random() > 0.5) {
+			return delimiter1;
+		}
+		return delimiter2;
 	}
 
 	@Test
@@ -140,7 +179,7 @@ public class StringCalculatorTest {
 
 	@Test
 	void custom_delimiters_can_be_of_any_length_when_surrounded_in_square_brackets() {
-		String excludedSpecialChars = Pattern.quote("[]");
+		String excludedSpecialChars = Pattern.quote("[]\\");
 		qt()
 				.forAll(intArrays(range(2, 1000), range(0, MAX_NUMBER_SUPPORTED)),
 						strings().basicLatinAlphabet().ofLengthBetween(2, 3)

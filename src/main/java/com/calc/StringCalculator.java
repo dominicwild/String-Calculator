@@ -42,27 +42,45 @@ public class StringCalculator {
 
 	private static List<Integer> parseNumbersFrom(String numbersInput) {
 		String splitRegex = "(,|\\\\n)";
+		String numbers = numbersInput;
 
 		if (numbersInput.startsWith(CUSTOM_DELIMITER_PREFIX)) {
-			Pattern customLengthDelimiterRegex = Pattern.compile(CUSTOM_DELIMITER_PREFIX + "\\[(.*?)\\]");
-			Matcher delimiterMatcher = customLengthDelimiterRegex.matcher(numbersInput);
+			String delimiterDefinition = getDelimiterDefinitionFrom(numbersInput);
+			numbers = getNumbersFrom(numbersInput);
 
-			if (delimiterMatcher.find()) {
-				String multiCharDelimiter = delimiterMatcher.group(1);
+			Matcher multiDelimiterMatcher = Pattern.compile("^\\[(.*?)\\]$").matcher(delimiterDefinition);
+			Matcher twoSingleDelimiterMatcher = Pattern.compile("^\\[(.)\\]\\[(.)\\]$").matcher(delimiterDefinition);
+
+			if (twoSingleDelimiterMatcher.find()) {
+				String firstDelimiter = Pattern.quote(twoSingleDelimiterMatcher.group(1));
+				String secondDelimiter = Pattern.quote(twoSingleDelimiterMatcher.group(2));
+				splitRegex = String.format("(%s|%s)", firstDelimiter, secondDelimiter);
+			} else if (multiDelimiterMatcher.find()) {
+				String multiCharDelimiter = multiDelimiterMatcher.group(1);
 				splitRegex = Pattern.quote(multiCharDelimiter);
-				numbersInput = numbersInput.substring(6 + multiCharDelimiter.length());
 			} else {
 				String singleCharDelimiter = numbersInput.charAt(2) + "";
 				splitRegex = Pattern.quote(singleCharDelimiter);
-				numbersInput = numbersInput.substring(5);
 			}
 		}
 
-		String[] splitNumbers = numbersInput.split(splitRegex);
+		String[] splitNumbers = numbers.split(splitRegex);
 		return Stream.of(splitNumbers)
 				.map(Integer::parseInt)
 				.filter(number -> number <= MAX_NUMBER_SUPPORTED)
 				.collect(toList());
+	}
+
+	private static String getNumbersFrom(String numbersInput) {
+		Matcher numbersMatcher = Pattern.compile("//.*\\\\n(.*)").matcher(numbersInput);
+		numbersMatcher.find();
+		return numbersMatcher.group(1);
+	}
+
+	private static String getDelimiterDefinitionFrom(String numbersInput) {
+		Matcher delimiterMatcher = Pattern.compile("//(.*)\\\\n.*").matcher(numbersInput);
+		delimiterMatcher.find();
+		return delimiterMatcher.group(1);
 	}
 
 	private static void checkForNoNegativeNumbers(List<Integer> parsedNumbers) {
