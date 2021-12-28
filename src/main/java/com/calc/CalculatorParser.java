@@ -7,6 +7,7 @@ import com.calc.parsers.ConversionUtil;
 import com.calc.parsers.MultiDelimiterParser;
 import com.calc.parsers.NumberParser;
 import com.calc.parsers.SingleDelimiterParser;
+import com.calc.parsers.TwoMultiDelimiterParser;
 import com.calc.parsers.TwoSingleDelimiterParser;
 
 public class CalculatorParser {
@@ -16,7 +17,7 @@ public class CalculatorParser {
 
 		if (numbersInput.startsWith(StringCalculator.CUSTOM_DELIMITER_PREFIX)) {
 			List<NumberParser> parsers = getParsersFor(numbersInput);
-			
+
 			for (NumberParser numberParser : parsers) {
 				if(numberParser.match()){
 					return numberParser.parse();
@@ -32,6 +33,7 @@ public class CalculatorParser {
 		return Arrays.asList(
 				new SingleDelimiterParser(numbersInput),
 				new TwoSingleDelimiterParser(numbersInput),
+				new TwoMultiDelimiterParser(numbersInput),
 				new MultiDelimiterParser(numbersInput));
 	}
 

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -110,8 +111,8 @@ public class StringCalculatorTest {
 								.assuming(string -> !string.isBlank()
 										&& !string.matches(".*[0-9" + excludedSpecialChars + "].*")))
 				.check((numbers, delimiter) -> {
-					char delimiter1 = delimiter.charAt(0);
-					char delimiter2 = delimiter.charAt(1);
+					String delimiter1 = "" + delimiter.charAt(0);
+					String delimiter2 = "" + delimiter.charAt(1);
 					String delimiterPrefix = String.format("//[%s][%s]\\n", delimiter1, delimiter2);
 
 					StringBuilder stringBuilder = new StringBuilder();
@@ -119,7 +120,7 @@ public class StringCalculatorTest {
 					int sumOfNumbers = 0;
 
 					for (int number : numbers) {
-						char randomDelimiter = randomDelimiterFrom(delimiter1, delimiter2);
+						String randomDelimiter = randomDelimiterFrom(delimiter1, delimiter2);
 
 						stringBuilder.append("" + number + randomDelimiter);
 						sumOfNumbers += number;
@@ -127,13 +128,6 @@ public class StringCalculatorTest {
 
 					return StringCalculator.add(stringBuilder.toString()) == sumOfNumbers;
 				});
-	}
-
-	private char randomDelimiterFrom(char delimiter1, char delimiter2) {
-		if (Math.random() > 0.5) {
-			return delimiter1;
-		}
-		return delimiter2;
 	}
 
 	@Test
@@ -181,8 +175,7 @@ public class StringCalculatorTest {
 		qt()
 				.forAll(intArrays(range(2, 1000), range(0, MAX_NUMBER_SUPPORTED)),
 						strings().basicLatinAlphabet().ofLengthBetween(2, 3)
-								.assuming(string -> !string.trim().isBlank()
-										&& !string.matches(".*[0-9" + excludedSpecialChars + "].*")))
+								.assuming(delimiterHasValidCharacters(excludedSpecialChars)))
 				.check((numbers, delimiter) -> {
 					StringBuilder stringBuilder = new StringBuilder();
 					stringBuilder.append("//[" + delimiter + "]\\n");
@@ -195,6 +188,41 @@ public class StringCalculatorTest {
 
 					return StringCalculator.add(stringBuilder.toString()) == sumOfNumbers;
 				});
+	}
+
+	@Test
+	void two_delimiters_of_any_length_when_surrounded_in_square_brackets_returns_sum() {
+		String excludedSpecialChars = Pattern.quote("[]\\");
+		qt()
+				.forAll(intArrays(range(2, 1000), range(0, MAX_NUMBER_SUPPORTED)),
+						strings().basicLatinAlphabet().ofLengthBetween(2, 3)
+								.assuming(delimiterHasValidCharacters(excludedSpecialChars)),
+						strings().basicLatinAlphabet().ofLengthBetween(2, 3)
+								.assuming(delimiterHasValidCharacters(excludedSpecialChars)))
+				.check((numbers, delimiter1, delimiter2) -> {
+					StringBuilder stringBuilder = new StringBuilder();
+					stringBuilder.append("//[" + delimiter1 + "][" + delimiter2 + "]\\n");
+					int sumOfNumbers = 0;
+
+					for (int number : numbers) {
+						stringBuilder.append(number + randomDelimiterFrom(delimiter1, delimiter2));
+						sumOfNumbers += number;
+					}
+
+					return StringCalculator.add(stringBuilder.toString()) == sumOfNumbers;
+				});
+	}
+
+	private Predicate<String> delimiterHasValidCharacters(String excludedSpecialChars) {
+		return string -> !string.trim().isBlank()
+				&& !string.matches(".*[0-9" + excludedSpecialChars + "].*");
+	}
+
+	private String randomDelimiterFrom(String delimiter1, String delimiter2) {
+		if (Math.random() > 0.5) {
+			return delimiter1;
+		}
+		return delimiter2;
 	}
 
 	private String randomDelimiter() {
