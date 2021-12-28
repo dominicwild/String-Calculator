@@ -1,5 +1,6 @@
 package com.calc;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.calc.parsers.ConversionUtil;
@@ -14,25 +15,24 @@ public class CalculatorParser {
 		String splitRegex = "(,|\\\\n)";
 
 		if (numbersInput.startsWith(StringCalculator.CUSTOM_DELIMITER_PREFIX)) {
-			NumberParser multiDelimiterParser = new MultiDelimiterParser(numbersInput);
-			NumberParser twoDelimiterParser = new TwoSingleDelimiterParser(numbersInput);
-			NumberParser singleDelimiterParser = new SingleDelimiterParser(numbersInput);
-
-			if (singleDelimiterParser.match()) {
-				return singleDelimiterParser.parse();
-			}
-
-			if (twoDelimiterParser.match()) {
-				return twoDelimiterParser.parse();
-			}
-
-			if (multiDelimiterParser.match()) {
-				return multiDelimiterParser.parse();
+			List<NumberParser> parsers = getParsersFor(numbersInput);
+			
+			for (NumberParser numberParser : parsers) {
+				if(numberParser.match()){
+					return numberParser.parse();
+				}
 			}
 		}
 
 		String[] splitNumbers = numbersInput.split(splitRegex);
 		return ConversionUtil.stringsToInts(splitNumbers);
+	}
+
+	private static List<NumberParser> getParsersFor(String numbersInput) {
+		return Arrays.asList(
+				new SingleDelimiterParser(numbersInput),
+				new TwoSingleDelimiterParser(numbersInput),
+				new MultiDelimiterParser(numbersInput));
 	}
 
 }
