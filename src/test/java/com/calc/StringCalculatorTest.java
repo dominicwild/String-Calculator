@@ -112,8 +112,6 @@ public class StringCalculatorTest {
 				.check((numbers, delimiter) -> {
 					char delimiter1 = delimiter.charAt(0);
 					char delimiter2 = delimiter.charAt(1);
-					delimiter1 = '!';
-					delimiter2 = '!';
 					String delimiterPrefix = String.format("//[%s][%s]\\n", delimiter1, delimiter2);
 
 					StringBuilder stringBuilder = new StringBuilder();
